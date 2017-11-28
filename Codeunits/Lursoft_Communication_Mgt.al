@@ -42,23 +42,23 @@ codeunit 25028829 "Lursoft Communication Mgt."
     local procedure StartLursoftSession() SessionKey : Text;
     
     var
-        Arguments : Record "REST Web Service Arguments";
-        LursoftCommunicationSetup : Record "Lursoft Communication Setup";
-        JSONMethods : Codeunit "JSON Methods";
-        TypeHelper : Codeunit "Type Helper";
-        JSONResult : JsonObject;
-        _xmlNode : XmlNode;
-        _xmlNodeList : XmlNodeList;
-        _xlmElement : XmlElement;
-        _xmlDoc : XmlDocument;
-        _xmlProcessor : XmlNamespaceManager;
-        data : Text;
-        info : Text;
-        MessageText : Text;
-        password : Text;
-        ResponseText : Text;
-        ct : Integer;
-        curr : Integer;
+        Arguments: Record "REST Web Service Arguments";
+        LursoftCommunicationSetup: Record "Lursoft Communication Setup";
+        JSONMethods: Codeunit "JSON Methods";
+        TypeHelper: Codeunit "Type Helper";
+        JSONResult: JsonObject;
+        _xlmElement: XmlElement;
+        _xmlNodeList: XmlNodeList;
+        _xmlDoc: XmlDocument;
+        _xmlNode: XmlNode;
+        _xmlProcessor: XmlNamespaceManager;
+        ct: Integer;
+        curr: Integer;
+        data: Text;
+        info: Text;
+        MessageText: Text;
+        password: Text;
+        ResponseText: Text;
     begin
         LursoftCommunicationSetup.Get();
         ErrorIfNoUserName(LursoftCommunicationSetup);
@@ -74,31 +74,21 @@ codeunit 25028829 "Lursoft Communication Mgt."
             exit;
             
         ResponseText := TestAndSaveResult(Arguments);
-        MESSAGE(ResponseText);
+        Message('1:\' + ResponseText);
         
-        if not XmlDocument.ReadFrom(ResponseText, _xmlDoc) then
-          error('Text is not valid XML!');
-
-        _xmlDoc.GetChildNodes().Get(1, _xmlNode);  
+        if not XmlDocument.ReadFrom(ResponseText,_xmlDoc) then
+            Error('Text is not valid XML!');
+            
+        _xmlProcessor.NameTable(_xmlDoc.NameTable());
+        _xmlProcessor.AddNamespace('soap','http://www.w3.org/2001/09/soap-envelope');
+        _xmlProcessor.AddNamespace('Lursoft','x-schema:/schemas/lursoft_header.xsd');
+        if not _xmlDoc.SelectNodes('//Lursoft:SessionId',_xmlProcessor,_xmlNodeList) then
+            Error('Response does not contains any Session Key');
+            
+        foreach _xmlNode in _xmlNodeList do begin
+            SessionKey += _xmlNode.AsXmlElement.InnerText;
+        end;
         
-        ResponseText := _xmlNode.AsXmlElement.NamespaceUri;
-
-_xmlProcessor.NameTable(_xmlDoc.NameTable());
-_xmlProcessor.AddNamespace('', _xmlNode.AsXmlElement.NamespaceUri);
-//_xmlDoc.NameTable.Get('SessionId', info);
-
- _xmlDoc.SelectNodes('Lursoft:SessionId', _xmlProcessor, _xmlNodeList);
-/*
-ct := _xmlNodeList.Count();
-
-repeat
-  info += _xmlNode.AsXmlElement.InnerText;
-  curr += 1;
-until curr = ct; 
-*/
-
-Message(info);
-    exit(ResponseText);
-        
+        exit(SessionKey);       
     end;
 }
