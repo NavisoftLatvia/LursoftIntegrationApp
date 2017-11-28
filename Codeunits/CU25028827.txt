@@ -1,0 +1,787 @@
+OBJECT Codeunit 25028827 Lursoft Communication Mgt.
+{
+  OBJECT-PROPERTIES
+  {
+    Date=09.11.17;
+    Time=08:30:46;
+    Modified=Yes;
+    Version List=NS.WebServMgt,NS.LSoft.2017;
+  }
+  PROPERTIES
+  {
+    OnRun=VAR
+            sessionKey@2500000 : Text;
+            XmlDN_Doc@2500001 : DotNet "'System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlDocument";
+          BEGIN
+          END;
+
+  }
+  CODE
+  {
+    VAR
+      txtvar@2500000 : Text;
+      custCode@2500001 : Code[20];
+
+    LOCAL PROCEDURE StartLursoftSession@1000000006(user@1000000000 : Text;passWord@1000000001 : Text) SessionKey : Text;
+    VAR
+      RESTWSManagement@1004 : Codeunit 25028826;
+      stringContent@1000000015 : DotNet "'System.Net.Http, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.System.Net.Http.StringContent";
+      httpUtility@1000000005 : DotNet "'System.Web, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.System.Web.HttpUtility";
+      encoding@1000000006 : DotNet "'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Text.Encoding";
+      result@1000000007 : DotNet "'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.String";
+      HttpResponseMessage@1003 : DotNet "'System.Net.Http, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.System.Net.Http.HttpResponseMessage";
+      data@1000000003 : Text;
+      filePath@1000000012 : Text;
+      success@2500005 : Boolean;
+      responseFile@2500006 : File;
+      fileManagement@2500007 : Codeunit 419;
+      XmlDN_Doc@2500011 : DotNet "'System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlDocument";
+      XMLDN_Nodelist@2500010 : DotNet "'System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlNodeList";
+      XMLDN_Node@2500009 : DotNet "'System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlNode";
+      XMLDN_NodeChildlist@2500008 : DotNet "'System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlNodeList";
+    BEGIN
+      data := 'act=LOGINXML&Userid=' + httpUtility.UrlEncode(user,encoding.GetEncoding('UTF-8'));
+      data += '&Password=' + httpUtility.UrlEncode(passWord, encoding.GetEncoding('UTF-8'));
+      data += '&utf='+ httpUtility.UrlEncode('1', encoding.GetEncoding('UTF-8'));
+
+      filePath := ProcessingRequest(data);
+
+      XmlDN_Doc := XmlDN_Doc.XmlDocument;
+      XmlDN_Doc.Load(filePath);
+
+      XMLDN_Nodelist := XmlDN_Doc.GetElementsByTagName('soap:Header');
+      XMLDN_Node := XMLDN_Nodelist.Item(0);
+      SessionKey := ValueNodeByName(XMLDN_Node, 'Lursoft:SessionId');
+
+      RemoveFile(filePath);
+
+      EXIT(SessionKey);
+    END;
+
+    [TryFunction]
+    LOCAL PROCEDURE GetPartnerInfoFromLursoft@2500003(sessionKey@1000000000 : Text;partnerCode@1000000001 : Text;VAR XmlDN_Doc@2500000 : DotNet "'System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlDocument");
+    VAR
+      RESTWSManagement@1004 : Codeunit 25028826;
+      stringContent@1000000015 : DotNet "'System.Net.Http, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.System.Net.Http.StringContent";
+      httpUtility@1000000005 : DotNet "'System.Web, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.System.Web.HttpUtility";
+      encoding@1000000006 : DotNet "'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Text.Encoding";
+      result@1000000007 : DotNet "'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.String";
+      HttpResponseMessage@1003 : DotNet "'System.Net.Http, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.System.Net.Http.HttpResponseMessage";
+      data@1000000003 : Text;
+      success@2500005 : Boolean;
+      responseFile@2500006 : File;
+      fileManagement@2500007 : Codeunit 419;
+      XMLDN_Nodelist@2500010 : DotNet "'System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlNodeList";
+      XMLDN_Node@2500009 : DotNet "'System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlNode";
+      XMLDN_NodeChildlist@2500008 : DotNet "'System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlNodeList";
+      filePath@2500001 : Text;
+      testNotification@2500002 : Notification;
+      LursoftCommunicationMgt@2500003 : Codeunit 25028827;
+      cCd@2500004 : Code[20];
+    BEGIN
+      data := 'act=URPERSON_XML&SessionID=' + httpUtility.UrlEncode(sessionKey,encoding.GetEncoding('UTF-8'));
+      data += '&code=' + httpUtility.UrlEncode(partnerCode, encoding.GetEncoding('UTF-8'));
+      data += '&userperscode=' + httpUtility.UrlEncode(partnerCode, encoding.GetEncoding('UTF-8'));
+      data += '&part='  + httpUtility.UrlEncode('W', encoding.GetEncoding('UTF-8'));
+      data += '&utf='+ httpUtility.UrlEncode('1', encoding.GetEncoding('UTF-8'));
+
+      filePath := ProcessingRequest(data);
+
+      XmlDN_Doc := XmlDN_Doc.XmlDocument;
+      XmlDN_Doc.Load(filePath);
+
+      EVALUATE(cCd, partnerCode);
+      CLEAR(LursoftCommunicationMgt);
+      IF NOT CheckForServiceError(XmlDN_Doc, filePath) THEN;
+
+      RemoveFile(filePath);
+    END;
+
+    LOCAL PROCEDURE CloseLursoftSession@2500009(SessionKey@2500001 : Text) : Boolean;
+    VAR
+      RESTWSManagement@2500016 : Codeunit 25028826;
+      stringContent@2500015 : DotNet "'System.Net.Http, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.System.Net.Http.StringContent";
+      httpUtility@2500014 : DotNet "'System.Web, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.System.Web.HttpUtility";
+      encoding@2500013 : DotNet "'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Text.Encoding";
+      result@2500012 : DotNet "'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.String";
+      HttpResponseMessage@2500011 : DotNet "'System.Net.Http, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.System.Net.Http.HttpResponseMessage";
+      data@2500010 : Text;
+      filePath@2500009 : Text;
+      success@2500008 : Boolean;
+      responseFile@2500007 : File;
+      fileManagement@2500006 : Codeunit 419;
+      XmlDN_Doc@2500005 : DotNet "'System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlDocument";
+      XMLDN_Nodelist@2500004 : DotNet "'System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlNodeList";
+      XMLDN_Node@2500003 : DotNet "'System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlNode";
+      XMLDN_NodeChildlist@2500002 : DotNet "'System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlNodeList";
+    BEGIN
+      data := 'act=LOGOUTXML&SessionId=' + httpUtility.UrlEncode(SessionKey,encoding.GetEncoding('UTF-8'));
+      data += '&utf='+ httpUtility.UrlEncode('1', encoding.GetEncoding('UTF-8'));
+
+      filePath := ProcessingRequest(data);
+
+      XmlDN_Doc := XmlDN_Doc.XmlDocument;
+      XmlDN_Doc.Load(filePath);
+
+      XMLDN_Nodelist := XmlDN_Doc.GetElementsByTagName('soap:Header');
+      XMLDN_Node := XMLDN_Nodelist.Item(0);
+      SessionKey := ValueNodeByName(XMLDN_Node, 'Lursoft:SessionId');
+
+      RemoveFile(filePath);
+
+      EXIT(success);
+    END;
+
+    LOCAL PROCEDURE ProcessingRequest@2500017(data@2500015 : Text) : Text;
+    VAR
+      RESTWSManagement@2500014 : Codeunit 25028826;
+      stringContent@2500013 : DotNet "'System.Net.Http, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.System.Net.Http.StringContent";
+      httpUtility@2500012 : DotNet "'System.Web, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.System.Web.HttpUtility";
+      encoding@2500011 : DotNet "'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Text.Encoding";
+      result@2500010 : DotNet "'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.String";
+      HttpResponseMessage@2500009 : DotNet "'System.Net.Http, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.System.Net.Http.HttpResponseMessage";
+      filePath@2500007 : Text;
+      success@2500006 : Boolean;
+      responseFile@2500005 : File;
+      fileManagement@2500004 : Codeunit 419;
+      XmlDN_Doc@2500003 : DotNet "'System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlDocument";
+      XMLDN_Nodelist@2500002 : DotNet "'System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlNodeList";
+      XMLDN_Node@2500001 : DotNet "'System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlNode";
+      XMLDN_NodeChildlist@2500000 : DotNet "'System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlNodeList";
+    BEGIN
+      stringContent := stringContent.StringContent(data,encoding.UTF8,'application/x-www-form-urlencoded');
+
+      success := RESTWSManagement.CallRESTWebService('https://www.lursoft.lv/server3'
+                                                     , ''
+                                                     , 'POST'
+                                                     , stringContent
+                                                     , HttpResponseMessage
+                                                    );
+
+      IF NOT success THEN
+        ERROR('Error in processing request!');
+
+      result := HttpResponseMessage.Content.ReadAsStringAsync.Result;
+
+      filePath := fileManagement.ServerTempFileName('xml');
+      responseFile.WRITEMODE(TRUE);
+      responseFile.TEXTMODE(TRUE);
+      responseFile.CREATE(filePath, TEXTENCODING::UTF8);
+      responseFile.WRITE(result.ToString());
+      responseFile.CLOSE;
+
+      EXIT(filePath);
+    END;
+
+    LOCAL PROCEDURE CheckForServiceError@2500032(VAR XmlDN_Doc@2500004 : DotNet "'System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlDocument";filePath@2500000 : Text) : Boolean;
+    VAR
+      XMLDN_Nodelist@2500003 : DotNet "'System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlNodeList";
+      XMLDN_Node@2500002 : DotNet "'System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlNode";
+      XMLDN_NodeChildlist@2500001 : DotNet "'System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlNodeList";
+    BEGIN
+      XMLDN_Nodelist := XmlDN_Doc.GetElementsByTagName('soap:Body');
+      XMLDN_Nodelist := XmlDN_Doc.DocumentElement.SelectNodes('//Fault/details');
+      IF XMLDN_Nodelist.Count <> 0 THEN BEGIN
+        XMLDN_Node := XMLDN_Nodelist.Item(0);
+
+        IF ValueNodeByName(XMLDN_Node, 'Lursoft:ErrorCode') <> '' THEN
+          ThrowServiceError(filePath);
+      END;
+
+      EXIT(FALSE);
+    END;
+
+    LOCAL PROCEDURE ThrowServiceError@2500026(filePath@2500001 : Text);
+    VAR
+      ConfirmationMsg@2500000 : TextConst 'ENU=Warning!\\Requested partner is not detected into the Lursoft database.\\Continue?;LVI=BrŒdinƒjums!\\PieprasŒtais partneris nav atrasts Lursoft datubƒz‰!\\Turpinƒt?';
+    BEGIN
+      IF NOT CONFIRM(ConfirmationMsg, FALSE) THEN BEGIN
+        RemoveFile(filePath);
+        ERROR('');
+      END;
+    END;
+
+    LOCAL PROCEDURE ValueNodeByName@1000000011(Node@1000000001 : DotNet "'System.Xml, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlNode";Name@1000000003 : Text[250]) : Text[400];
+    VAR
+      Nodelist@1000000000 : DotNet "'System.Xml, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlNodeList";
+      ChildNum@1000000002 : Integer;
+      TmpStr@1000000004 : Text[1024];
+      TmpStr1@1000000005 : Text[1024];
+      TmpStr2@1000000006 : Text[500];
+    BEGIN
+      Nodelist:=Node.ChildNodes;
+      FOR ChildNum:=0 TO Nodelist.Count -1 DO BEGIN
+         TmpStr:= Nodelist.Item(ChildNum).Name;
+           TmpStr:= Nodelist.Item(ChildNum).Name;
+           TmpStr1:= Nodelist.Item(ChildNum).InnerText;
+           IF UPPERCASE(Nodelist.Item(ChildNum).Name) = UPPERCASE(Name) THEN
+             EXIT(Nodelist.Item(ChildNum).InnerText);
+      END;
+
+      EXIT('');
+    END;
+
+    LOCAL PROCEDURE RemoveFile@2500029(filePath@2500000 : Text);
+    VAR
+      FileManagement@2500001 : Codeunit 419;
+    BEGIN
+      IF FileManagement.ServerFileExists(filePath) THEN
+        FileManagement.DeleteServerFile(filePath);
+    END;
+
+    [EventSubscriber(Table,18,OnAfterValidateEvent,"Registration No.",Skip,Skip)]
+    LOCAL PROCEDURE OnAfterValidateCustomerRegNo@2500000(VAR Rec@2500000 : Record 18;VAR xRec@2500001 : Record 18;CurrFieldNo@2500002 : Integer);
+    BEGIN
+      IF Rec.ISTEMPORARY THEN
+        EXIT;
+
+      IF Rec."Registration No." = '' THEN
+        EXIT;
+
+      IF Rec."Registration No." = xRec."Registration No." THEN
+        EXIT;
+
+      CustomerGetDataFromLursoft(Rec);
+    END;
+
+    [EventSubscriber(Table,23,OnAfterValidateEvent,"Registration No.",Skip,Skip)]
+    LOCAL PROCEDURE OnAfterValidateVendorRegNo@2500022(VAR Rec@2500000 : Record 23;VAR xRec@2500001 : Record 23;CurrFieldNo@2500002 : Integer);
+    BEGIN
+      IF Rec.ISTEMPORARY THEN
+        EXIT;
+
+      IF Rec."Registration No." = '' THEN
+        EXIT;
+
+      IF Rec."Registration No." = xRec."Registration No." THEN
+        EXIT;
+
+      VendorGetDataFromLursoft(Rec);
+    END;
+
+    [EventSubscriber(Table,5050,OnAfterValidateEvent,"Registration No.",Skip,Skip)]
+    LOCAL PROCEDURE OnAfterValidateContactRegNo@2500023(VAR Rec@2500000 : Record 5050;VAR xRec@2500001 : Record 5050;CurrFieldNo@2500002 : Integer);
+    BEGIN
+      IF Rec.ISTEMPORARY THEN
+        EXIT;
+
+      IF Rec."Registration No." = '' THEN
+        EXIT;
+
+      IF Rec."Registration No." = xRec."Registration No." THEN
+        EXIT;
+
+      ContactGetDataFromLursoft(Rec);
+    END;
+
+    LOCAL PROCEDURE CustomerGetDataFromLursoft@2500006(VAR Rec@2500000 : Record 18);
+    VAR
+      XmlDN_Doc@2500004 : DotNet "'System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlDocument";
+      XMLDN_Nodelist@2500003 : DotNet "'System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlNodeList";
+      XMLDN_Node@2500002 : DotNet "'System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlNode";
+      XMLDN_NodeChildlist@2500001 : DotNet "'System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlNodeList";
+      sessionKey@2500005 : Text;
+      nodeValue@2500006 : Text;
+    BEGIN
+      sessionKey := StartLursoftSession('nsoft_xml', 'Navi$oft2017LS');
+      IF NOT GetPartnerInfoFromLursoft(sessionKey, Rec."Registration No.", XmlDN_Doc) THEN
+        ERROR(GETLASTERRORTEXT);
+      CloseLursoftSession(sessionKey);
+
+      XMLDN_Nodelist := XmlDN_Doc.GetElementsByTagName('soap:Body');
+
+      XMLDN_Nodelist := XmlDN_Doc.DocumentElement.SelectNodes('//answer');
+      IF XMLDN_Nodelist.Count <> 0 THEN BEGIN
+        XMLDN_Node := XMLDN_Nodelist.Item(0);
+        nodeValue := ValueNodeByName(XMLDN_Node, 'country');
+        Rec.VALIDATE("Country/Region Code", nodeValue);
+      END;
+
+      XMLDN_Nodelist := XmlDN_Doc.DocumentElement.SelectNodes('//answer/person');
+      IF XMLDN_Nodelist.Count <> 0 THEN BEGIN
+        XMLDN_Node := XMLDN_Nodelist.Item(0);
+
+        nodeValue := ValueNodeByName(XMLDN_Node, 'firm');
+
+        IF ValueNodeByName(XMLDN_Node, 'type') <> '' THEN
+          nodeValue += ' ' + ValueNodeByName(XMLDN_Node, 'type');
+
+        IF nodeValue <> '' THEN BEGIN
+          IF STRLEN(nodeValue) <= 50 THEN BEGIN
+            Rec.VALIDATE(Name, (DELCHR(StrToLines(nodeValue, 50),'>',' ')));
+            Rec.VALIDATE("Name 2", COPYSTR(nodeValue, STRLEN(Rec.Name) + 1 , 50));
+          END ELSE
+            Rec.VALIDATE(Name, nodeValue);
+        END;
+
+        CLEAR(nodeValue);
+        nodeValue := ValueNodeByName(XMLDN_Node, 'pvncode');
+        IF nodeValue <> '' THEN
+          Rec.VALIDATE("VAT Registration No.", nodeValue);
+
+        CLEAR(nodeValue);
+        nodeValue := ValueNodeByName(XMLDN_Node, 'phone');
+        IF nodeValue <> '' THEN
+          Rec.VALIDATE("Phone No.", nodeValue);
+
+        CLEAR(nodeValue);
+        nodeValue := ValueNodeByName(XMLDN_Node, 'email');
+        IF nodeValue <> '' THEN
+          Rec.VALIDATE("E-Mail", nodeValue);
+
+        CLEAR(nodeValue);
+        nodeValue := ValueNodeByName(XMLDN_Node, 'homepage');
+        IF nodeValue <> '' THEN
+          Rec.VALIDATE("Home Page", nodeValue);
+
+      END;
+
+      XMLDN_Nodelist := XmlDN_Doc.DocumentElement.SelectNodes('//answer/person/address');
+      IF XMLDN_Nodelist.Count <> 0 THEN BEGIN
+        XMLDN_Node := XMLDN_Nodelist.Item(0);
+
+        CLEAR(nodeValue);
+        nodeValue := ValueNodeByName(XMLDN_Node, 'city');
+        IF nodeValue <> '' THEN
+          Rec.City := nodeValue;
+
+        CLEAR(nodeValue);
+        nodeValue := ValueNodeByName(XMLDN_Node, 'village');
+        IF nodeValue <> '' THEN
+          Rec.County := nodeValue;
+
+        CLEAR(nodeValue);
+        nodeValue := ValueNodeByName(XMLDN_Node, 'street');
+
+        IF ValueNodeByName(XMLDN_Node, 'house') <> '' THEN
+          nodeValue += ' ' + ValueNodeByName(XMLDN_Node, 'house');
+        IF ValueNodeByName(XMLDN_Node, 'corpuss') <> '' THEN
+          nodeValue += '-' + ValueNodeByName(XMLDN_Node, 'corpuss');
+        IF ValueNodeByName(XMLDN_Node, 'flat') <> '' THEN
+          nodeValue += '-' + ValueNodeByName(XMLDN_Node, 'flat');
+
+        IF STRLEN(nodeValue) <= 50 THEN BEGIN
+          Rec.VALIDATE(Address, (DELCHR(StrToLines(nodeValue, 50),'>',' ')));
+          Rec.VALIDATE("Address 2", COPYSTR(nodeValue, STRLEN(Rec.Address) + 1 , 50));
+        END ELSE
+          Rec.VALIDATE(Address, nodeValue);
+
+        CLEAR(nodeValue);
+        nodeValue := ValueNodeByName(XMLDN_Node, 'index');
+        IF nodeValue <> '' THEN
+          Rec."Post Code" := Rec."Country/Region Code" + '-' + nodeValue;
+      END;
+
+      XMLDN_Nodelist := XmlDN_Doc.DocumentElement.SelectNodes('//answer/person/warnings');
+      IF XMLDN_Nodelist.Count <> 0 THEN BEGIN
+        XMLDN_Node := XMLDN_Nodelist.Item(0);
+
+        CLEAR(nodeValue);
+        nodeValue := ValueNodeByName(XMLDN_Node, 'warnings');
+        IF nodeValue <> '' THEN BEGIN
+          IF nodeValue = 'true' THEN
+            Rec."Has Lursoft warning" := TRUE
+          ELSE
+            Rec."Has Lursoft warning" := FALSE;
+        END ELSE
+           Rec."Has Lursoft warning" := FALSE;
+
+        CLEAR(nodeValue);
+        nodeValue := ValueNodeByName(XMLDN_Node, 'url');
+        IF nodeValue <> '' THEN
+          Rec."Lursoft client URL" := nodeValue;
+      END;
+      Rec.MODIFY;
+
+      SetWarningNotification(Rec);
+    END;
+
+    LOCAL PROCEDURE VendorGetDataFromLursoft@2500020(VAR Rec@2500000 : Record 23);
+    VAR
+      XmlDN_Doc@2500004 : DotNet "'System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlDocument";
+      XMLDN_Nodelist@2500003 : DotNet "'System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlNodeList";
+      XMLDN_Node@2500002 : DotNet "'System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlNode";
+      XMLDN_NodeChildlist@2500001 : DotNet "'System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlNodeList";
+      sessionKey@2500005 : Text;
+      nodeValue@2500006 : Text;
+    BEGIN
+      sessionKey := StartLursoftSession('nsoft_xml', 'Navi$oft2017LS');
+      IF NOT GetPartnerInfoFromLursoft(sessionKey, Rec."Registration No.", XmlDN_Doc) THEN
+        ERROR(GETLASTERRORTEXT);
+      CloseLursoftSession(sessionKey);
+
+      XMLDN_Nodelist := XmlDN_Doc.GetElementsByTagName('soap:Body');
+
+      XMLDN_Nodelist := XmlDN_Doc.DocumentElement.SelectNodes('//answer');
+      IF XMLDN_Nodelist.Count <> 0 THEN BEGIN
+        XMLDN_Node := XMLDN_Nodelist.Item(0);
+        nodeValue := ValueNodeByName(XMLDN_Node, 'country');
+        Rec.VALIDATE("Country/Region Code", nodeValue);
+      END;
+
+      XMLDN_Nodelist := XmlDN_Doc.DocumentElement.SelectNodes('//answer/person');
+      IF XMLDN_Nodelist.Count <> 0 THEN BEGIN
+        XMLDN_Node := XMLDN_Nodelist.Item(0);
+
+        nodeValue := ValueNodeByName(XMLDN_Node, 'firm');
+
+        IF ValueNodeByName(XMLDN_Node, 'type') <> '' THEN
+          nodeValue += ' ' + ValueNodeByName(XMLDN_Node, 'type');
+
+        IF nodeValue <> '' THEN BEGIN
+          IF STRLEN(nodeValue) <= 50 THEN BEGIN
+            Rec.VALIDATE(Name, (DELCHR(StrToLines(nodeValue, 50),'>',' ')));
+            Rec.VALIDATE("Name 2", COPYSTR(nodeValue, STRLEN(Rec.Name) + 1 , 50));
+          END ELSE
+            Rec.VALIDATE(Name, nodeValue);
+        END;
+
+        CLEAR(nodeValue);
+        nodeValue := ValueNodeByName(XMLDN_Node, 'pvncode');
+        IF nodeValue <> '' THEN
+          Rec.VALIDATE("VAT Registration No.", nodeValue);
+
+        CLEAR(nodeValue);
+        nodeValue := ValueNodeByName(XMLDN_Node, 'phone');
+        IF nodeValue <> '' THEN
+          Rec.VALIDATE("Phone No.", nodeValue);
+
+        CLEAR(nodeValue);
+        nodeValue := ValueNodeByName(XMLDN_Node, 'email');
+        IF nodeValue <> '' THEN
+          Rec.VALIDATE("E-Mail", nodeValue);
+
+        CLEAR(nodeValue);
+        nodeValue := ValueNodeByName(XMLDN_Node, 'homepage');
+        IF nodeValue <> '' THEN
+          Rec.VALIDATE("Home Page", nodeValue);
+
+      END;
+
+      XMLDN_Nodelist := XmlDN_Doc.DocumentElement.SelectNodes('//answer/person/address');
+      IF XMLDN_Nodelist.Count <> 0 THEN BEGIN
+        XMLDN_Node := XMLDN_Nodelist.Item(0);
+
+        CLEAR(nodeValue);
+        nodeValue := ValueNodeByName(XMLDN_Node, 'city');
+        IF nodeValue <> '' THEN
+          Rec.City := nodeValue;
+
+        CLEAR(nodeValue);
+        nodeValue := ValueNodeByName(XMLDN_Node, 'village');
+        IF nodeValue <> '' THEN
+          Rec.County := nodeValue;
+
+        CLEAR(nodeValue);
+        nodeValue := ValueNodeByName(XMLDN_Node, 'street');
+
+        IF ValueNodeByName(XMLDN_Node, 'house') <> '' THEN
+          nodeValue += ' ' + ValueNodeByName(XMLDN_Node, 'house');
+        IF ValueNodeByName(XMLDN_Node, 'corpuss') <> '' THEN
+          nodeValue += '-' + ValueNodeByName(XMLDN_Node, 'corpuss');
+        IF ValueNodeByName(XMLDN_Node, 'flat') <> '' THEN
+          nodeValue += '-' + ValueNodeByName(XMLDN_Node, 'flat');
+
+        IF STRLEN(nodeValue) <= 50 THEN BEGIN
+          Rec.VALIDATE(Address, (DELCHR(StrToLines(nodeValue, 50),'>',' ')));
+          Rec.VALIDATE("Address 2", COPYSTR(nodeValue, STRLEN(Rec.Address) + 1 , 50));
+        END ELSE
+          Rec.VALIDATE(Address, nodeValue);
+
+        CLEAR(nodeValue);
+        nodeValue := ValueNodeByName(XMLDN_Node, 'index');
+        IF nodeValue <> '' THEN
+          Rec."Post Code" := Rec."Country/Region Code" + '-' + nodeValue;
+      END;
+
+      XMLDN_Nodelist := XmlDN_Doc.DocumentElement.SelectNodes('//answer/person/warnings');
+      IF XMLDN_Nodelist.Count <> 0 THEN BEGIN
+        XMLDN_Node := XMLDN_Nodelist.Item(0);
+
+        CLEAR(nodeValue);
+        nodeValue := ValueNodeByName(XMLDN_Node, 'warnings');
+        IF nodeValue <> '' THEN BEGIN
+          IF nodeValue = 'true' THEN
+            Rec."Has Lursoft warning" := TRUE
+          ELSE
+            Rec."Has Lursoft warning" := FALSE;
+        END;
+
+        CLEAR(nodeValue);
+        nodeValue := ValueNodeByName(XMLDN_Node, 'url');
+        IF nodeValue <> '' THEN
+          Rec."Lursoft client URL" := nodeValue;
+      END;
+      Rec.MODIFY;
+
+      SetWarningNotification(Rec);
+    END;
+
+    LOCAL PROCEDURE ContactGetDataFromLursoft@2500021(VAR Rec@2500000 : Record 5050);
+    VAR
+      XmlDN_Doc@2500004 : DotNet "'System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlDocument";
+      XMLDN_Nodelist@2500003 : DotNet "'System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlNodeList";
+      XMLDN_Node@2500002 : DotNet "'System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlNode";
+      XMLDN_NodeChildlist@2500001 : DotNet "'System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlNodeList";
+      sessionKey@2500005 : Text;
+      nodeValue@2500006 : Text;
+    BEGIN
+      sessionKey := StartLursoftSession('nsoft_xml', 'Navi$oft2017LS');
+      IF NOT GetPartnerInfoFromLursoft(sessionKey, Rec."Registration No.", XmlDN_Doc) THEN
+        ERROR(GETLASTERRORTEXT);
+      CloseLursoftSession(sessionKey);
+
+      XMLDN_Nodelist := XmlDN_Doc.GetElementsByTagName('soap:Body');
+
+      XMLDN_Nodelist := XmlDN_Doc.DocumentElement.SelectNodes('//answer');
+      IF XMLDN_Nodelist.Count <> 0 THEN BEGIN
+        XMLDN_Node := XMLDN_Nodelist.Item(0);
+        nodeValue := ValueNodeByName(XMLDN_Node, 'country');
+        Rec.VALIDATE("Country/Region Code", nodeValue);
+      END;
+
+      XMLDN_Nodelist := XmlDN_Doc.DocumentElement.SelectNodes('//answer/person');
+      IF XMLDN_Nodelist.Count <> 0 THEN BEGIN
+        XMLDN_Node := XMLDN_Nodelist.Item(0);
+
+        nodeValue := ValueNodeByName(XMLDN_Node, 'firm');
+
+        IF ValueNodeByName(XMLDN_Node, 'type') <> '' THEN
+          nodeValue += ' ' + ValueNodeByName(XMLDN_Node, 'type');
+
+        IF nodeValue <> '' THEN BEGIN
+          IF STRLEN(nodeValue) <= 50 THEN BEGIN
+            Rec.VALIDATE(Name, (DELCHR(StrToLines(nodeValue, 50),'>',' ')));
+            Rec.VALIDATE("Name 2", COPYSTR(nodeValue, STRLEN(Rec.Name) + 1 , 50));
+          END ELSE
+            Rec.VALIDATE(Name, nodeValue);
+        END;
+
+        CLEAR(nodeValue);
+        nodeValue := ValueNodeByName(XMLDN_Node, 'pvncode');
+        IF nodeValue <> '' THEN
+          Rec.VALIDATE("VAT Registration No.", nodeValue);
+
+        CLEAR(nodeValue);
+        nodeValue := ValueNodeByName(XMLDN_Node, 'phone');
+        IF nodeValue <> '' THEN
+          Rec.VALIDATE("Phone No.", nodeValue);
+
+        CLEAR(nodeValue);
+        nodeValue := ValueNodeByName(XMLDN_Node, 'email');
+        IF nodeValue <> '' THEN
+          Rec.VALIDATE("E-Mail", nodeValue);
+
+        CLEAR(nodeValue);
+        nodeValue := ValueNodeByName(XMLDN_Node, 'homepage');
+        IF nodeValue <> '' THEN
+          Rec.VALIDATE("Home Page", nodeValue);
+
+      END;
+
+      XMLDN_Nodelist := XmlDN_Doc.DocumentElement.SelectNodes('//answer/person/address');
+      IF XMLDN_Nodelist.Count <> 0 THEN BEGIN
+        XMLDN_Node := XMLDN_Nodelist.Item(0);
+
+        CLEAR(nodeValue);
+        nodeValue := ValueNodeByName(XMLDN_Node, 'city');
+        IF nodeValue <> '' THEN
+          Rec.City := nodeValue;
+
+        CLEAR(nodeValue);
+        nodeValue := ValueNodeByName(XMLDN_Node, 'village');
+        IF nodeValue <> '' THEN
+          Rec.County := nodeValue;
+
+        CLEAR(nodeValue);
+        nodeValue := ValueNodeByName(XMLDN_Node, 'street');
+
+        IF ValueNodeByName(XMLDN_Node, 'house') <> '' THEN
+          nodeValue += ' ' + ValueNodeByName(XMLDN_Node, 'house');
+        IF ValueNodeByName(XMLDN_Node, 'corpuss') <> '' THEN
+          nodeValue += '-' + ValueNodeByName(XMLDN_Node, 'corpuss');
+        IF ValueNodeByName(XMLDN_Node, 'flat') <> '' THEN
+          nodeValue += '-' + ValueNodeByName(XMLDN_Node, 'flat');
+
+        IF STRLEN(nodeValue) <= 50 THEN BEGIN
+          Rec.VALIDATE(Address, (DELCHR(StrToLines(nodeValue, 50),'>',' ')));
+          Rec.VALIDATE("Address 2", COPYSTR(nodeValue, STRLEN(Rec.Address) + 1 , 50));
+        END ELSE
+          Rec.VALIDATE(Address, nodeValue);
+
+        CLEAR(nodeValue);
+        nodeValue := ValueNodeByName(XMLDN_Node, 'index');
+        IF nodeValue <> '' THEN
+          Rec."Post Code" := Rec."Country/Region Code" + '-' + nodeValue;
+      END;
+
+      XMLDN_Nodelist := XmlDN_Doc.DocumentElement.SelectNodes('//answer/person/warnings');
+      IF XMLDN_Nodelist.Count <> 0 THEN BEGIN
+        XMLDN_Node := XMLDN_Nodelist.Item(0);
+
+        CLEAR(nodeValue);
+        nodeValue := ValueNodeByName(XMLDN_Node, 'warnings');
+        IF nodeValue <> '' THEN BEGIN
+          IF nodeValue = 'true' THEN
+            Rec."Has Lursoft warning" := TRUE
+          ELSE
+            Rec."Has Lursoft warning" := FALSE;
+        END;
+
+        CLEAR(nodeValue);
+        nodeValue := ValueNodeByName(XMLDN_Node, 'url');
+        IF nodeValue <> '' THEN
+          Rec."Lursoft client URL" := nodeValue;
+      END;
+      Rec.MODIFY;
+
+      SetWarningNotification(Rec);
+    END;
+
+    PROCEDURE StrToLines@1101923007(ST@1000000000 : Text[1024];nn@1000000001 : Integer) : Text[1024];
+    VAR
+      SN@1000000002 : Text[500];
+      STmp@1000000003 : Text[500];
+      STmp1@1000000005 : Text[500];
+      Char10@1000000004 : Char;
+      Char13@1000000006 : Char;
+      Str_0D_0A@1000000007 : Text[30];
+      i@1101923000 : Integer;
+      SpaceFound@1101923001 : Boolean;
+    BEGIN
+      Str_0D_0A[1]:=13;
+      Str_0D_0A[2]:=10;
+      Str_0D_0A[3]:=8;
+
+      ST:=DELCHR(ST,'=',Str_0D_0A);
+      WHILE STRPOS(ST,'  ') > 0 DO ST:= DELSTR(ST,STRPOS(ST,'  '),1);
+
+      WHILE STRLEN(ST) > 0 DO BEGIN
+        WHILE COPYSTR(ST,1,1) = ' ' DO
+          ST := DELSTR(ST,1,1);
+
+        IF STRLEN(ST) <= nn THEN BEGIN
+           STmp:= ST;
+           ST:='';
+        END
+        ELSE IF (STRPOS(ST,' ')>nn) OR (STRPOS(ST,' ')=0) THEN BEGIN
+           STmp:= COPYSTR(ST,1,nn);
+           ST:= COPYSTR(ST,nn+1);
+        END
+        ELSE BEGIN
+           STmp := COPYSTR(ST,1,nn);
+           ST:= DELSTR(ST,1,nn);
+
+           SpaceFound := FALSE;
+           i := STRLEN(STmp);
+           WHILE NOT SpaceFound DO BEGIN
+             IF COPYSTR(STmp,i,1) = ' ' THEN
+               SpaceFound := TRUE
+             ELSE BEGIN
+               ST := COPYSTR(STmp,i,1) + ST;
+               STmp := DELSTR(STmp,i,1);
+               i -= 1;
+             END;
+           END;
+        END;
+
+        WHILE STRLEN(STmp) < nn DO
+          STmp += ' ';
+
+        SN := SN + STmp;
+
+      END;
+
+      EXIT(SN);
+    END;
+
+    LOCAL PROCEDURE SetWarningNotification@2500004(Rec@2500000 : Variant);
+    VAR
+      _recRef@2500001 : RecordRef;
+      _fieldRef@2500004 : FieldRef;
+      DataTypeManagement@2500002 : Codeunit 701;
+      NotificationMessage@2500003 : Notification;
+      Notify@2500005 : Boolean;
+      NotifyUrl@2500006 : Text;
+      WarningText@2500007 : TextConst 'ENU=Customer has some problems with liabilities!;LVI=Partnerim Lursoft datu bƒz‰ ir re…istr‰ti apgr×tinƒjumi!';
+      OpenUrlText@2500008 : TextConst 'ENU=More information...;LVI=Vairƒk informƒcijas...';
+    BEGIN
+      DataTypeManagement.GetRecordRef(Rec, _recRef);
+
+      IF _recRef.ISEMPTY THEN
+        EXIT;
+
+      IF NOT DataTypeManagement.FindFieldByName(_recRef, _fieldRef, 'Has Lursoft Warning') THEN
+        EXIT;
+
+      Notify := _fieldRef.VALUE;
+
+      IF NOT Notify THEN
+        EXIT;
+
+      IF NOT DataTypeManagement.FindFieldByName(_recRef, _fieldRef, 'Lursoft Client URL') THEN
+        EXIT;
+
+      NotifyUrl := _fieldRef.VALUE;
+
+      IF NotifyUrl = '' THEN
+        EXIT;
+
+      NotificationMessage.MESSAGE(WarningText);
+      NotificationMessage.SCOPE := NOTIFICATIONSCOPE::LocalScope;
+      NotificationMessage.SETDATA('lSoftUrl', NotifyUrl);
+      NotificationMessage.ADDACTION(OpenUrlText, CODEUNIT::"Lursoft Communication Mgt.", 'openServiceURL');
+      NotificationMessage.SEND;
+    END;
+
+    [EventSubscriber(Page,21,OnOpenPageEvent)]
+    LOCAL PROCEDURE SetNotificationOnOpenCustomer@2500008(VAR Rec@2500000 : Record 18);
+    BEGIN
+      IF Rec.ISTEMPORARY THEN
+        EXIT;
+      IF Rec."Registration No." = '' THEN
+        EXIT;
+      IF Rec."No." = '' THEN
+        EXIT;
+
+      SetWarningNotification(Rec);
+    END;
+
+    [EventSubscriber(Page,26,OnOpenPageEvent)]
+    LOCAL PROCEDURE SetNotificationOnOpenVendor@2500010(VAR Rec@2500000 : Record 23);
+    BEGIN
+      IF Rec.ISTEMPORARY THEN
+        EXIT;
+      IF Rec."Registration No." = '' THEN
+        EXIT;
+      IF Rec."No." = '' THEN
+        EXIT;
+
+      SetWarningNotification(Rec);
+    END;
+
+    [EventSubscriber(Page,5050,OnOpenPageEvent)]
+    LOCAL PROCEDURE SetNotificationOnOpenContact@2500011(VAR Rec@2500000 : Record 5050);
+    BEGIN
+      IF Rec.ISTEMPORARY THEN
+        EXIT;
+      IF Rec."Registration No." = '' THEN
+        EXIT;
+      IF Rec."No." = '' THEN
+        EXIT;
+      IF NOT (Rec.Type = Rec.Type::Company) THEN
+        EXIT;
+
+      SetWarningNotification(Rec);
+    END;
+
+    PROCEDURE OpenServiceURL@2500014(VAR NotificationMessage@2500000 : Notification);
+    BEGIN
+      HYPERLINK(NotificationMessage.GETDATA('lSoftUrl'));
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

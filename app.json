@@ -1,0 +1,24 @@
+{
+  "id": "58999cef-c2cb-4e6b-8f6e-ce7b11c9c4a7",
+  "name": "Communication module with Lursoft",
+  "publisher": "Navisoft",
+  "brief": "",
+  "description": "",
+  "version": "1.0.0.0",
+  "compatibilityId": "1.0.0.0",
+  "privacyStatement": "http://www.navisoft.lv/privacy",
+  "EULA": "http://www.navisoft.lv/privacy",
+  "help": "http://www.navisoft.lv#contact",
+  "url": "http://www.navisoft.lv",
+  "logo": "logo.jpg",
+  "capabilities": [],
+  "dependencies": [],
+  "screenshots": [],
+  "platform": "11.0.0.0",
+  "application": "11.0.0.0",
+  "locale": "W1",
+  "idRange": {
+    "from": 25028827,
+    "to": 25028832
+  }
+}
