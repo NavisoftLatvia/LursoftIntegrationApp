@@ -52,11 +52,7 @@ codeunit 25028829 "Lursoft Communication Mgt."
         _xmlDoc: XmlDocument;
         _xmlNode: XmlNode;
         _xmlProcessor: XmlNamespaceManager;
-        ct: Integer;
-        curr: Integer;
         data: Text;
-        info: Text;
-        MessageText: Text;
         password: Text;
         ResponseText: Text;
     begin
