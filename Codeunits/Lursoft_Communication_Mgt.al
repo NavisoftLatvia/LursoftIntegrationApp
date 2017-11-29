@@ -70,7 +70,6 @@ codeunit 25028829 "Lursoft Communication Mgt."
             exit;
             
         ResponseText := TestAndSaveResult(Arguments);
-        Message('1:\' + ResponseText);
         
         if not XmlDocument.ReadFrom(ResponseText,_xmlDoc) then
             Error('Text is not valid XML!');
@@ -87,4 +86,43 @@ codeunit 25028829 "Lursoft Communication Mgt."
         
         exit(SessionKey);       
     end;
+    
+    local procedure SetWarningNotification(Rec : Variant);
+    VAR
+      _recRef : RecordRef;
+      _fieldRef : FieldRef;
+      DataTypeManagement : Codeunit "Data Type Management";
+      NotificationMessage : Notification;
+      Notify : Boolean;
+      NotifyUrl : Text;
+      WarningText : TextConst ENU='Customer has some problems with liabilities!', LVI='Partnerim Lursoft datu bāzē ir reģistrēti apgrūtinājumi!';
+      OpenUrlText : TextConst ENU='More information...', LVI='Vairāk informācijas...';
+    BEGIN
+      DataTypeManagement.GetRecordRef(Rec, _recRef);
+
+      IF _recRef.ISEMPTY THEN
+        EXIT;
+
+      IF NOT DataTypeManagement.FindFieldByName(_recRef, _fieldRef, 'Has Lursoft Warning') THEN
+        EXIT;
+
+      Notify := _fieldRef.VALUE;
+
+      IF NOT Notify THEN
+        EXIT;
+
+      IF NOT DataTypeManagement.FindFieldByName(_recRef, _fieldRef, 'Lursoft Client URL') THEN
+        EXIT;
+
+      NotifyUrl := _fieldRef.VALUE;
+
+      IF NotifyUrl = '' THEN
+        EXIT;
+
+      NotificationMessage.MESSAGE(WarningText);
+      NotificationMessage.SCOPE := NOTIFICATIONSCOPE::LocalScope;
+      NotificationMessage.SETDATA('lSoftUrl', NotifyUrl);
+      NotificationMessage.ADDACTION(OpenUrlText, CODEUNIT::"Lursoft Communication Mgt.", 'openServiceURL');
+      NotificationMessage.SEND;
+    END;
 }
