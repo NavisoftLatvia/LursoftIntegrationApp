@@ -1,0 +1,94 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en-US" original="Communication module with Lursoft">
+    <body>
+      <group id="body">
+        <trans-unit id="TableExtension 873401529 - Field 329945759 - Property 2879900210" maxWidth="999" size-unit="char" translate="yes" xml:space="preserve">
+          <source>Has Lursoft warning</source>
+          <note from="Developer" annotates="general" priority="2" />
+          <note from="Xliff Generator" annotates="general" priority="3">TableExtension - Field</note>
+        </trans-unit>
+        <trans-unit id="TableExtension 873401529 - Field 2281238801 - Property 2879900210" maxWidth="999" size-unit="char" translate="yes" xml:space="preserve">
+          <source>Lursoft client URL</source>
+          <note from="Developer" annotates="general" priority="2" />
+          <note from="Xliff Generator" annotates="general" priority="3">TableExtension - Field</note>
+        </trans-unit>
+        <trans-unit id="TableExtension 4232433341 - Field 329945759 - Property 2879900210" maxWidth="999" size-unit="char" translate="yes" xml:space="preserve">
+          <source>Has Lursoft warning</source>
+          <note from="Developer" annotates="general" priority="2" />
+          <note from="Xliff Generator" annotates="general" priority="3">TableExtension - Field</note>
+        </trans-unit>
+        <trans-unit id="TableExtension 4232433341 - Field 2281238801 - Property 2879900210" maxWidth="999" size-unit="char" translate="yes" xml:space="preserve">
+          <source>Lursoft client URL</source>
+          <note from="Developer" annotates="general" priority="2" />
+          <note from="Xliff Generator" annotates="general" priority="3">TableExtension - Field</note>
+        </trans-unit>
+        <trans-unit id="Table 3829995854 - Field 2333076789 - Property 2879900210" maxWidth="999" size-unit="char" translate="yes" xml:space="preserve">
+          <source>PrimaryKey</source>
+          <note from="Developer" annotates="general" priority="2" />
+          <note from="Xliff Generator" annotates="general" priority="3">Table - Field</note>
+        </trans-unit>
+        <trans-unit id="Table 3829995854 - Field 1814464443 - Property 2879900210" maxWidth="999" size-unit="char" translate="yes" xml:space="preserve">
+          <source>User</source>
+          <note from="Developer" annotates="general" priority="2" />
+          <note from="Xliff Generator" annotates="general" priority="3">Table - Field</note>
+        </trans-unit>
+        <trans-unit id="Table 3829995854 - Field 2575460289 - Property 2879900210" maxWidth="999" size-unit="char" translate="yes" xml:space="preserve">
+          <source>Password</source>
+          <note from="Developer" annotates="general" priority="2" />
+          <note from="Xliff Generator" annotates="general" priority="3">Table - Field</note>
+        </trans-unit>
+        <trans-unit id="TableExtension 1150395829 - Field 329945759 - Property 2879900210" maxWidth="999" size-unit="char" translate="yes" xml:space="preserve">
+          <source>Has Lursoft warning</source>
+          <note from="Developer" annotates="general" priority="2" />
+          <note from="Xliff Generator" annotates="general" priority="3">TableExtension - Field</note>
+        </trans-unit>
+        <trans-unit id="TableExtension 1150395829 - Field 2281238801 - Property 2879900210" maxWidth="999" size-unit="char" translate="yes" xml:space="preserve">
+          <source>Lursoft client URL</source>
+          <note from="Developer" annotates="general" priority="2" />
+          <note from="Xliff Generator" annotates="general" priority="3">TableExtension - Field</note>
+        </trans-unit>
+        <trans-unit id="Table 1004932063 - Field 2333076789 - Property 2879900210" maxWidth="999" size-unit="char" translate="yes" xml:space="preserve">
+          <source>PrimaryKey</source>
+          <note from="Developer" annotates="general" priority="2" />
+          <note from="Xliff Generator" annotates="general" priority="3">Table - Field</note>
+        </trans-unit>
+        <trans-unit id="Table 1004932063 - Field 1953297401 - Property 2879900210" maxWidth="999" size-unit="char" translate="yes" xml:space="preserve">
+          <source>RestMethod</source>
+          <note from="Developer" annotates="general" priority="2" />
+          <note from="Xliff Generator" annotates="general" priority="3">Table - Field</note>
+        </trans-unit>
+        <trans-unit id="Table 1004932063 - Field 3003898253 - Property 2879900210" maxWidth="999" size-unit="char" translate="yes" xml:space="preserve">
+          <source>URL</source>
+          <note from="Developer" annotates="general" priority="2" />
+          <note from="Xliff Generator" annotates="general" priority="3">Table - Field</note>
+        </trans-unit>
+        <trans-unit id="Table 1004932063 - Field 467812692 - Property 2879900210" maxWidth="999" size-unit="char" translate="yes" xml:space="preserve">
+          <source>Accept</source>
+          <note from="Developer" annotates="general" priority="2" />
+          <note from="Xliff Generator" annotates="general" priority="3">Table - Field</note>
+        </trans-unit>
+        <trans-unit id="Table 1004932063 - Field 3411229705 - Property 2879900210" maxWidth="999" size-unit="char" translate="yes" xml:space="preserve">
+          <source>ETag</source>
+          <note from="Developer" annotates="general" priority="2" />
+          <note from="Xliff Generator" annotates="general" priority="3">Table - Field</note>
+        </trans-unit>
+        <trans-unit id="Table 1004932063 - Field 3549826426 - Property 2879900210" maxWidth="999" size-unit="char" translate="yes" xml:space="preserve">
+          <source>UserName</source>
+          <note from="Developer" annotates="general" priority="2" />
+          <note from="Xliff Generator" annotates="general" priority="3">Table - Field</note>
+        </trans-unit>
+        <trans-unit id="Table 1004932063 - Field 2575460289 - Property 2879900210" maxWidth="999" size-unit="char" translate="yes" xml:space="preserve">
+          <source>Password</source>
+          <note from="Developer" annotates="general" priority="2" />
+          <note from="Xliff Generator" annotates="general" priority="3">Table - Field</note>
+        </trans-unit>
+        <trans-unit id="Table 1004932063 - Field 3926698677 - Property 2879900210" maxWidth="999" size-unit="char" translate="yes" xml:space="preserve">
+          <source>Blob</source>
+          <note from="Developer" annotates="general" priority="2" />
+          <note from="Xliff Generator" annotates="general" priority="3">Table - Field</note>
+        </trans-unit>
+      </group>
+    </body>
+  </file>
+</xliff>

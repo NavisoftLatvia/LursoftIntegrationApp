@@ -7,7 +7,6 @@ table 25028831 "Lursoft Communication Setup"
         field(1; PrimaryKey; Code[10])
         {
             CaptionML = ENU='Primary Key', LVI='Primārā atslēga';
-            
         }
         field(2; User; text[250])
         {

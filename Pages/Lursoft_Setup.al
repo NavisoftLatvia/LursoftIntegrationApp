@@ -11,6 +11,7 @@ page 25028827 "Lursoft Communication Setup"
             group(General)
             {
                 CaptionML = ENU='General';
+                
                 field(User;User) {}
                 field(PasswordTemp;PasswordTemp)
                 {
